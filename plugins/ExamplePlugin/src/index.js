@@ -3,8 +3,8 @@ import { intercept, actions, store } from "@neptune/core";
 import { neptune, playbackControls } from "@neptune";
 
 const app = express();
-const port = 3000;
-const serverPort = 16258;
+const port = 3003;
+const serverPort = 16257;
 const trackRegex = /track\/(\d+)/;
 
 let currentPlaybackState = {
