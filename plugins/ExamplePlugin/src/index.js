@@ -33,6 +33,9 @@ const expressServer = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
+// Subscribe to store changes to update playback state
+const storeSubscription = store.subscribe(updateCurrentPlaybackState);
+
 // Handle playback control actions in Neptune
 neptune.on("playbackControl", (control) => {
   switch (control) {
@@ -54,13 +57,16 @@ neptune.on("playbackControl", (control) => {
 });
 
 // Intercept playback control actions to trigger updates
-const unloadIntercept = intercept([
-  "playbackControls/SET_PLAYBACK_STATE",
-  "playbackControls/PLAY_PREVIOUS",
-  "playbackControls/PLAY_NEXT",
-], () => {
-  updateCurrentPlaybackState();
-});
+const unloadIntercept = intercept(
+  [
+    "playbackControls/SET_PLAYBACK_STATE",
+    "playbackControls/PLAY_PREVIOUS",
+    "playbackControls/PLAY_NEXT",
+  ],
+  () => {
+    updateCurrentPlaybackState();
+  }
+);
 
 // HTTP server to receive track ID for fetching and playing
 const server = http.createServer((req, res) => {
@@ -90,6 +96,7 @@ server.listen(serverPort, () => {
 // Function to stop the plugin when unloading
 export const onUnload = () => {
   unloadIntercept();
+  storeSubscription(); // Unsubscribe from store changes
   expressServer.close(() => {
     console.log("Express server closed");
   });
